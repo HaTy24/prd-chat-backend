@@ -1,0 +1,47 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Account {
+  firstName: String!
+  id: String!
+  lastName: String!
+}
+
+input AccountJoinGroupInput {
+  accountId: String!
+  groupId: String!
+  isAdmin: Boolean!
+}
+
+input CreateAccountInput {
+  firstName: String!
+  lastName: String!
+}
+
+input CreateGroupInput {
+  groupName: String!
+}
+
+type Group {
+  groupName: String!
+  id: String!
+}
+
+type GroupManagement {
+  accountId: String!
+  groupId: String!
+  id: String!
+  isAdmin: Boolean!
+}
+
+type Mutation {
+  accountJoinGroup(accountJoinGroupInput: AccountJoinGroupInput!): GroupManagement!
+  createAccount(createAccountInput: CreateAccountInput!): Account!
+  createGroup(createGroupInput: CreateGroupInput!): Group!
+}
+
+type Query {
+  account: [Account!]!
+  group: [Group!]!
+}
