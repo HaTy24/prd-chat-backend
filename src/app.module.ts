@@ -12,7 +12,8 @@ import { ChatRoomModule } from './chat-room/chat-room.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env', isGlobal: true,
+      envFilePath: '.env',
+      isGlobal: true,
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -37,4 +38,4 @@ import { ChatRoomModule } from './chat-room/chat-room.module';
   ],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
