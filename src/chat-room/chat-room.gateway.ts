@@ -1,33 +1,47 @@
 import {
-  WebSocketGateway,
-  SubscribeMessage,
-  MessageBody,
   ConnectedSocket,
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { ChatRoomService } from './chat-room.service';
-import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
-import { Socket } from 'dgram';
 
 @WebSocketGateway({
   cors: '*',
 })
 export class ChatRoomGateway {
+  @WebSocketServer()
+  server: Server;
   constructor(private readonly chatRoomService: ChatRoomService) {}
 
-  @SubscribeMessage('message')
-  create(
-    @MessageBody() createChatRoomDto: CreateChatRoomDto,
-    @ConnectedSocket() client: Socket,
-  ) {
-    console.log({ createChatRoomDto, client });
-
-    // return this.chatRoomService.create(createChatRoomDto);
+  @SubscribeMessage('joinGroup')
+  async joinGroup(@MessageBody() payload, @ConnectedSocket() client: Socket) {
+    this.server.socketsJoin(payload);
+    this.server.to(payload).emit('haha', `this is message of ${payload}`);
   }
 
-  @SubscribeMessage('findAllChatRoom')
-  findAll() {
-    return this.chatRoomService.findAll();
+  @SubscribeMessage('message')
+  async createMessage(
+    @MessageBody() payload: { groupId: string; message: string },
+    @ConnectedSocket() client: Socket,
+    
+  ) {
+    console.log(payload.groupId);
+
+    const messageCreated = await this.chatRoomService.create(
+      client.id,
+      payload.groupId,
+      payload.message,
+    );
+    this.server.to(payload.groupId).emit('messageCreated', messageCreated);
+  }
+
+  @SubscribeMessage('findAllMessage')
+  findAll(@MessageBody() groupId) {
+    return this.chatRoomService.findAll(groupId);
   }
 
   @SubscribeMessage('findOneChatRoom')

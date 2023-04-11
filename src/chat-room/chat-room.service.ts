@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
 
 @Injectable()
 export class ChatRoomService {
-  create(createChatRoomDto: CreateChatRoomDto) {
-    return 'This action adds a new chatRoom';
+  private message = {};
+  create(clientId: string, groupId: string, message: string) {
+    this.message[groupId]
+      ? this.message[groupId].push({ clientId, message })
+      : (this.message[groupId] = [{ clientId, message }]);
+    return { clientId, message };
   }
 
-  findAll() {
-    return `This action returns all chatRoom`;
+  findAll(groupId: string) {
+    return this.message[groupId];
   }
 
   findOne(id: number) {
