@@ -19,7 +19,7 @@ export class ChatRoomGateway {
 
   @SubscribeMessage('joinGroup')
   async joinGroup(@MessageBody() payload, @ConnectedSocket() client: Socket) {
-    this.server.socketsJoin(payload);
+    await this.server.socketsJoin(payload.groupId);
     this.server.to(payload).emit('haha', `this is message of ${payload}`);
   }
 
@@ -27,10 +27,7 @@ export class ChatRoomGateway {
   async createMessage(
     @MessageBody() payload: { groupId: string; message: string },
     @ConnectedSocket() client: Socket,
-    
   ) {
-    console.log(payload.groupId);
-
     const messageCreated = await this.chatRoomService.create(
       client.id,
       payload.groupId,
