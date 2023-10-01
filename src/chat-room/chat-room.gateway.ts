@@ -1,13 +1,18 @@
 import {
-  ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { ChatRoomService } from './chat-room.service';
+import { Message } from './dto/chat-room.dto';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
+import { Request, UseGuards } from '@nestjs/common';
+import { WsGuard } from 'src/packages/guards/ws.guard';
+import { CurrentUser } from 'src/packages/decorators/user.decorator';
+import { Account } from 'src/account/entities/account.entity';
+import { AppRequest } from 'src/packages/interface';
 
 @WebSocketGateway({
   cors: '*',
@@ -17,22 +22,28 @@ export class ChatRoomGateway {
   server: Server;
   constructor(private readonly chatRoomService: ChatRoomService) {}
 
+  @UseGuards(WsGuard)
   @SubscribeMessage('joinGroup')
-  async joinGroup(@MessageBody() payload, @ConnectedSocket() client: Socket) {
+  async joinGroup(@MessageBody() payload, @CurrentUser() user: Account) {
+    console.log('user', user);
+
     await this.server.socketsJoin(payload.groupId);
-    this.server.to(payload).emit('haha', `this is message of ${payload}`);
+    this.server.to(payload).emit('joinGroup', `Joined: ${payload}`);
   }
 
+  @UseGuards(WsGuard)
   @SubscribeMessage('message')
   async createMessage(
-    @MessageBody() payload: { groupId: string; message: string },
-    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: Message,
+    @Request() req: AppRequest,
   ) {
-    const messageCreated = await this.chatRoomService.create(
-      client.id,
+    const messageCreated = await this.chatRoomService.createMessage(
+      req.user.id,
       payload.groupId,
       payload.message,
     );
+
     this.server.to(payload.groupId).emit('messageCreated', messageCreated);
   }
 

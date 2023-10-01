@@ -1,18 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
+import { Repository } from 'typeorm';
+import { ChatRoom } from './entities/chat-room.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ChatRoomService {
-  private message = {};
-  create(clientId: string, groupId: string, message: string) {
-    this.message[groupId]
-      ? this.message[groupId].push({ clientId, message })
-      : (this.message[groupId] = [{ clientId, message }]);
-    return { clientId, message };
+  constructor(
+    @InjectRepository(ChatRoom)
+    private chatRoomRepository: Repository<ChatRoom>,
+  ) {}
+  createMessage(clientId: string, groupId: string, message: string) {
+    const messageCreated = ChatRoom.from({
+      senderId: clientId,
+      groupId,
+      message,
+    });
+
+    return this.chatRoomRepository.save(messageCreated);
   }
 
   findAll(groupId: string) {
-    return this.message[groupId];
+    return this.chatRoomRepository.findOneBy({ groupId });
   }
 
   findOne(id: number) {

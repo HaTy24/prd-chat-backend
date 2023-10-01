@@ -1,16 +1,19 @@
-import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { AccountModule } from './account/account.module';
-import { GroupModule } from './group/group.module';
-import { GroupManagementModule } from './group-management/group-management.module';
+import { AuthModule } from './auth/auth.module';
 import { ChatRoomModule } from './chat-room/chat-room.module';
+import { GroupManagementModule } from './group-management/group-management.module';
+import { GroupModule } from './group/group.module';
 
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
@@ -19,6 +22,7 @@ import { ChatRoomModule } from './chat-room/chat-room.module';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
+      context: ({ req }) => ({ req }),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -35,6 +39,7 @@ import { ChatRoomModule } from './chat-room/chat-room.module';
     GroupModule,
     GroupManagementModule,
     ChatRoomModule,
+    AuthModule,
   ],
   providers: [],
 })

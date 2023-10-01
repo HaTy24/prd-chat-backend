@@ -19,4 +19,8 @@ export class AccountService {
   findAll() {
     return this.accountRepository.find();
   }
+
+  findByID(id: string) {
+    return this.accountRepository.findOneBy({ id });
+  }
 }
